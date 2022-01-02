@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #define BOARD_SIZE 3
 #define POS_SIZE 8
 
@@ -24,7 +25,9 @@ char* winningPosition(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], P
 char* winningPosition_helper(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], int i, char name);
 int integer(char c);
 char character(int x);
+void mark(TicTacToe* game, char* pos);
 Player* getOpponent(TicTacToe* game);
+char* randomPosition(TicTacToe* game);
 
 TicTacToe* constructTicTacToe(char user_name) {
     TicTacToe* game = (TicTacToe*) (malloc(sizeof(TicTacToe)));
@@ -64,6 +67,21 @@ TicTacToe* constructTicTacToe(char user_name) {
     return game;
 }
 
+void play(TicTacToe* game) {
+    char pos[2];
+    while(1) {
+        system("cls");
+        printf("\n");
+        printBoard(game);
+        printf("\n");
+        scanf("%s", pos);
+        mark(game, pos);
+        char* magic_pos = computePosition(game);
+        mark(game, magic_pos);
+        free(magic_pos);
+    }
+}
+
 void mark(TicTacToe* game, char* pos) {
     int x = integer(pos[0]);
     int y = integer(pos[1]);
@@ -75,6 +93,10 @@ void mark(TicTacToe* game, char* pos) {
 char* computePosition(TicTacToe* game) {
     Player* current_player = game->current;
     Player* opponent_player = getOpponent(game);
+    if (strcmp(current_player->last_pos, "") == 0 || strcmp(opponent_player->last_pos, "") == 0) {
+        char* magic_pos = randomPosition(game);
+        return magic_pos;
+    }
     char* winning_pos_current = winningPosition(game->board, game->positions, current_player);
     if (strcmp(winning_pos_current, "") != 0) {
         return winning_pos_current;
@@ -83,8 +105,22 @@ char* computePosition(TicTacToe* game) {
     if (strcmp(winning_pos_opponent, "") != 0) {
         return winning_pos_opponent;
     }
-    // char* magic_pos = randomPosition(game);
-    return "";
+    char* magic_pos = randomPosition(game);
+    return magic_pos;
+}
+
+char* randomPosition(TicTacToe* game) {
+    int row_index, col_index;
+    srand(time(0));
+    do {
+        row_index = rand() % BOARD_SIZE;
+        col_index = rand() % BOARD_SIZE;
+    } while (game->board[row_index][col_index] != ' ');
+    char* pos = malloc(3 * sizeof(char));
+    pos[0] = character(row_index);
+    pos[1] = character(col_index);
+    pos[2] = '\0';
+    return pos;
 }
 
 char* winningPosition(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], Player* player) {
