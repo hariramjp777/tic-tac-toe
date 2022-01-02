@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #define BOARD_SIZE 3
 #define POS_SIZE 8
 
@@ -18,6 +19,12 @@ typedef struct {
 
 TicTacToe* constructTicTacToe(char user_name);
 void printBoard(TicTacToe* game);
+char* computePosition(TicTacToe* game);
+char* winningPosition(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], Player* player);
+char* winningPosition_helper(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], int i, char name);
+int integer(char c);
+char character(int x);
+Player* getOpponent(TicTacToe* game);
 
 TicTacToe* constructTicTacToe(char user_name) {
     TicTacToe* game = (TicTacToe*) (malloc(sizeof(TicTacToe)));
@@ -57,10 +64,92 @@ TicTacToe* constructTicTacToe(char user_name) {
     return game;
 }
 
+void mark(TicTacToe* game, char* pos) {
+    int x = integer(pos[0]);
+    int y = integer(pos[1]);
+    game->board[x][y] = game->current->name;
+    game->current->last_pos = pos;
+    game->current = getOpponent(game);
+}
+
+char* computePosition(TicTacToe* game) {
+    Player* current_player = game->current;
+    Player* opponent_player = getOpponent(game);
+    char* winning_pos_current = winningPosition(game->board, game->positions, current_player);
+    if (strcmp(winning_pos_current, "") != 0) {
+        return winning_pos_current;
+    }
+    char* winning_pos_opponent = winningPosition(game->board, game->positions, opponent_player);
+    if (strcmp(winning_pos_opponent, "") != 0) {
+        return winning_pos_opponent;
+    }
+    // char* magic_pos = randomPosition(game);
+    return "";
+}
+
+char* winningPosition(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], Player* player) {
+    for (int i = 0; i < POS_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            char* winning_position;
+            if (strcmp(positions[i][j], player->last_pos) == 0) {
+                winning_position = winningPosition_helper(board, positions, i, player->name);
+                if (strcmp(winning_position, "") != 0) {
+                    return winning_position;
+                }
+            }
+        }
+    }
+    return "";
+}
+
+char* winningPosition_helper(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], int i, char name) {
+    int count_name = 0, count_space = 0, final_x, final_y;
+    char* pos; 
+    int x, y;
+    for (int j = 0; j < BOARD_SIZE; j++) {
+        pos = positions[i][j];
+        x = integer(pos[0]);
+        y = integer(pos[1]);
+        if (board[x][y] == ' ' ) {
+            final_x = x;
+            final_y = y;
+            count_space++;
+        }
+        else {
+            if (board[x][y] == name) {
+                count_name++;
+            }
+        }
+    }
+    if (count_name == 2 && count_space == 1) {
+        char* winning_pos = malloc(3 * sizeof(char));
+        winning_pos[0] = character(final_x);
+        winning_pos[1] = character(final_y);
+        winning_pos[2] = '\0';
+        return winning_pos;
+    }
+    return "";
+}
+
+int integer(char c) {
+    return (int) c - 48;
+}
+
+char character(int x) {
+    return x + '0';
+}
+
+Player* getOpponent(TicTacToe* game) {
+    if (game->current == game->user) {
+        return game->computer;
+    }
+    return game->user;
+}
+
 void printBoard(TicTacToe* game) {
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
-            printf("%c ", game->board[i][j]);
+            printf("[%c] ", game->board[i][j]);
         }
         printf("\n");
     }
