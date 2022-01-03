@@ -7,7 +7,7 @@
 
 typedef struct {
     char name;
-    char* last_pos;
+    char last_pos[3];
 } Player;
 
 typedef struct {
@@ -40,9 +40,9 @@ TicTacToe* constructTicTacToe(char user_name) {
         return NULL;
     }
     game->user->name = user_name;
-    game->user->last_pos = "";
+    game->user->last_pos[0] = '\0';
     game->computer->name = user_name == 'X' ? 'O' : 'X';
-    game->computer->last_pos = "";
+    game->computer->last_pos[0] = '\0';
     for (int i = 0; i < BOARD_SIZE; i++) {
         for (int j = 0; j < BOARD_SIZE; j++) {
             game->board[i][j] = ' ';
@@ -86,7 +86,9 @@ void mark(TicTacToe* game, char* pos) {
     int x = integer(pos[0]);
     int y = integer(pos[1]);
     game->board[x][y] = game->current->name;
-    game->current->last_pos = pos;
+    game->current->last_pos[0] = pos[0];
+    game->current->last_pos[1] = pos[1];
+    game->current->last_pos[2] = pos[2];
     game->current = getOpponent(game);
 }
 
