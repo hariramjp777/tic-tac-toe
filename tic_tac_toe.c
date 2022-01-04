@@ -28,6 +28,8 @@ char character(int x);
 void mark(TicTacToe* game, char* pos);
 Player* getOpponent(TicTacToe* game);
 char* randomPosition(TicTacToe* game);
+int gameOver(TicTacToe* game);
+int alreadyFilled(TicTacToe* game, char* pos);
 
 TicTacToe* constructTicTacToe(char user_name) {
     TicTacToe* game = (TicTacToe*) (malloc(sizeof(TicTacToe)));
@@ -69,17 +71,53 @@ TicTacToe* constructTicTacToe(char user_name) {
 
 void play(TicTacToe* game) {
     char pos[2];
+    int is_game_over;
+    int count = 0;
     while(1) {
+        count += 2;
         system("cls");
         printf("\n");
         printBoard(game);
         printf("\n");
-        scanf("%s", pos);
+        do {
+            printf("> ");
+            scanf("%s", pos);
+        } while (alreadyFilled(game, pos));
         mark(game, pos);
-        char* magic_pos = computePosition(game);
-        mark(game, magic_pos);
-        free(magic_pos);
+        if (count < 9) {
+            char* magic_pos = computePosition(game);
+            mark(game, magic_pos);
+            free(magic_pos);
+        }
+        is_game_over = gameOver(game);
+        printf("%d", is_game_over);
+        if (is_game_over == -1) {
+            continue;
+        }
+        else {
+            system("cls");
+            printf("\n");
+            printBoard(game);
+            printf("\n");
+            if (is_game_over == 0) {
+                printf("It's a tie");
+            }
+            else if (is_game_over == 1) {
+                printf("You win the game!");
+            }
+            else {
+                printf("You lost the game!");
+            }
+            printf("\n");
+            break;
+        }
     }
+}
+
+int alreadyFilled(TicTacToe* game, char* pos) {
+    int x = integer(pos[0]);
+    int y = integer(pos[1]);
+    return game->board[x][y] != ' ';
 }
 
 void mark(TicTacToe* game, char* pos) {
@@ -191,4 +229,40 @@ void printBoard(TicTacToe* game) {
         }
         printf("\n");
     }
+}
+
+int gameOver(TicTacToe* game) {
+    char current_name;
+    char* current_pos;
+    int x, y, count; 
+    int is_space = 0;
+    for (int i = 0; i < POS_SIZE; i++) {
+        current_name = '\0';
+        count = 0;
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            current_pos = game->positions[i][j];
+            x = integer(current_pos[0]);
+            y = integer(current_pos[1]);
+            if (game->board[x][y] == ' ') {
+                is_space = 1;
+                break;
+            }
+            if (current_name == '\0') {
+                current_name = game->board[x][y];
+                count++;
+                continue;
+            }
+            if (current_name != game->board[x][y]) {
+                break;
+            }
+            count++;
+        }
+        if (count == 3) {
+            return current_name == game->user->name ? 1 : 2;
+        }
+    }
+    if (is_space == 1) {
+        return -1;
+    }
+    return 0;
 }
