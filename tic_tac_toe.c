@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
+#include "colors.h"
 #define BOARD_SIZE 3
 #define POS_SIZE 8
 
@@ -20,6 +21,7 @@ typedef struct {
 
 TicTacToe* constructTicTacToe(char user_name);
 void printBoard(TicTacToe* game);
+void printBoard_color(TicTacToe* game, int pos_index);
 char* computePosition(TicTacToe* game);
 char* winningPosition(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], Player* player);
 char* winningPosition_helper(char board[][BOARD_SIZE], char* positions[][BOARD_SIZE], int i, char name);
@@ -28,9 +30,10 @@ char character(int x);
 void mark(TicTacToe* game, char* pos);
 Player* getOpponent(TicTacToe* game);
 char* randomPosition(TicTacToe* game);
-int gameOver(TicTacToe* game);
+int gameOver(TicTacToe* game, int* winning_pos_index);
 int alreadyFilled(TicTacToe* game, char* pos);
 int checkPos(char* pos);
+int indexOf(char* str_array[], int size, char* str);
 
 TicTacToe* constructTicTacToe(char user_name) {
     TicTacToe* game = (TicTacToe*) (malloc(sizeof(TicTacToe)));
@@ -72,7 +75,7 @@ TicTacToe* constructTicTacToe(char user_name) {
 
 void play(TicTacToe* game) {
     char pos[2];
-    int is_game_over;
+    int is_game_over, winning_pos_index;
     int count = 0;
     while(1) {
         count += 2;
@@ -90,23 +93,28 @@ void play(TicTacToe* game) {
             mark(game, magic_pos);
             free(magic_pos);
         }
-        is_game_over = gameOver(game);
+        is_game_over = gameOver(game, &winning_pos_index);
         if (is_game_over == -1) {
             continue;
         }
         else {
             system("cls");
-            printf("\n");
-            printBoard(game);
-            printf("\n");
             if (is_game_over == 0) {
+                printf("\n");
+                printBoard(game);
+                printf("\n");
                 printf("It's a tie");
             }
-            else if (is_game_over == 1) {
-                printf("You win the game!");
-            }
             else {
-                printf("You lost the game!");
+                printf("\n");
+                printBoard_color(game, winning_pos_index);
+                printf("\n");
+                if (is_game_over == 1) {
+                    printf("You win the game!");
+                }
+                else {
+                    printf("You lost the game!");
+                }
             }
             printf("\n");
             break;
@@ -231,7 +239,33 @@ void printBoard(TicTacToe* game) {
     }
 }
 
-int gameOver(TicTacToe* game) {
+void printBoard_color(TicTacToe* game, int pos_index) {
+    char* pos = (char*) malloc(3 * sizeof(char));
+    for (int i = 0; i < BOARD_SIZE; i++) {
+        for (int j = 0; j < BOARD_SIZE; j++) {
+            pos[0] = character(i), pos[1] = character(j), pos[2] = '\0';
+            if (indexOf(game->positions[pos_index], BOARD_SIZE, pos) != -1) {
+                printf(F_YELLOW "[%c] " RESET, game->board[i][j]);
+            }
+            else {
+                printf("[%c] ", game->board[i][j]);
+            }
+        }
+        printf("\n");
+    }
+    free(pos);
+}
+
+int indexOf(char* str_array[], int size, char* str) {
+    for (int i = 0; i < size; i++) {
+        if (strcmp(str, str_array[i]) == 0) {
+            return i;
+        }
+    }
+    return -1;
+}
+
+int gameOver(TicTacToe* game, int* winning_pos_index) {
     char current_name;
     char* current_pos;
     int x, y, count; 
@@ -258,6 +292,7 @@ int gameOver(TicTacToe* game) {
             count++;
         }
         if (count == 3) {
+            *winning_pos_index = i;
             return current_name == game->user->name ? 1 : 2;
         }
     }
