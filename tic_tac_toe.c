@@ -90,7 +90,6 @@ void play(TicTacToe* game) {
             free(magic_pos);
         }
         is_game_over = gameOver(game);
-        printf("%d", is_game_over);
         if (is_game_over == -1) {
             continue;
         }
