@@ -30,6 +30,7 @@ Player* getOpponent(TicTacToe* game);
 char* randomPosition(TicTacToe* game);
 int gameOver(TicTacToe* game);
 int alreadyFilled(TicTacToe* game, char* pos);
+int checkPos(char* pos);
 
 TicTacToe* constructTicTacToe(char user_name) {
     TicTacToe* game = (TicTacToe*) (malloc(sizeof(TicTacToe)));
@@ -82,7 +83,7 @@ void play(TicTacToe* game) {
         do {
             printf("> ");
             scanf("%s", pos);
-        } while (alreadyFilled(game, pos));
+        } while (!checkPos(pos) || alreadyFilled(game, pos));
         mark(game, pos);
         if (count < 9) {
             char* magic_pos = computePosition(game);
@@ -264,4 +265,10 @@ int gameOver(TicTacToe* game) {
         return -1;
     }
     return 0;
+}
+
+int checkPos(char* pos) {
+    int x = integer(pos[0]);
+    int y = integer(pos[1]);
+    return (x >= 0 && x < BOARD_SIZE) && (y >= 0 && y < BOARD_SIZE);
 }
